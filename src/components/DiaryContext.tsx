@@ -13,6 +13,7 @@ interface DiaryContextType {
   addEntry: (entry: Omit<DiaryEntry, "id">) => void;
   deleteEntry: (id: string) => void;
   isAuthenticated: boolean;
+  isSiteBlocked: boolean;
   login: (password: string) => boolean;
   logout: () => void;
 }
@@ -25,8 +26,9 @@ const CORRECT_PASSWORD = "12345"; // Это только для демо! В р�
 export const DiaryProvider = ({ children }: { children: ReactNode }) => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSiteBlocked, setIsSiteBlocked] = useState(false);
 
-  // Загружаем записи при монтировании
+  // Загружаем записи и проверяем блокировку при монтировании
   useEffect(() => {
     const savedEntries = localStorage.getItem("diaryEntries");
     if (savedEntries) {
@@ -37,10 +39,15 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     
-    // Проверяем статус аутентификации
+    // Проверяем статус аутентификации и блокировки
     const authStatus = localStorage.getItem("diaryAuth");
     if (authStatus === "true") {
       setIsAuthenticated(true);
+    }
+
+    const blockStatus = localStorage.getItem("diarySiteBlocked");
+    if (blockStatus === "true") {
+      setIsSiteBlocked(true);
     }
   }, []);
 
@@ -62,10 +69,19 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = (password: string) => {
+    // Если сайт уже заблокирован после первого использования
+    if (isSiteBlocked) {
+      return false;
+    }
+
     const success = password === CORRECT_PASSWORD;
     if (success) {
       setIsAuthenticated(true);
       localStorage.setItem("diaryAuth", "true");
+      
+      // Блокируем сайт после первого успешного входа
+      setIsSiteBlocked(true);
+      localStorage.setItem("diarySiteBlocked", "true");
     }
     return success;
   };
@@ -73,6 +89,7 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem("diaryAuth");
+    // Не удаляем блокировку при выходе!
   };
 
   return (
@@ -82,6 +99,7 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
         addEntry,
         deleteEntry,
         isAuthenticated,
+        isSiteBlocked,
         login,
         logout,
       }}

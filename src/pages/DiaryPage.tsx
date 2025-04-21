@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useDiary } from "@/components/DiaryContext";
-import { PlusCircle, LogOut, Trash2 } from "lucide-react";
+import { PlusCircle, LogOut, Trash2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
@@ -54,10 +54,18 @@ const DiaryPage = () => {
       <div className="max-w-4xl mx-auto">
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-primary">Мой Дневник</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Выйти
-          </Button>
+          <div className="flex items-center gap-2">
+            <Card className="p-2 bg-yellow-50 border-yellow-200">
+              <div className="flex items-center gap-2 text-amber-600">
+                <AlertCircle className="h-4 w-4" />
+                <p className="text-xs font-medium">Одноразовый доступ</p>
+              </div>
+            </Card>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Выйти
+            </Button>
+          </div>
         </header>
 
         <Card className="mb-8">
