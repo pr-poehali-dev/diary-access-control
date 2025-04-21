@@ -14,32 +14,31 @@ interface DiaryContextType {
   deleteEntry: (id: string) => void;
   isAuthenticated: boolean;
   isSiteBlocked: boolean;
-  login: (password: string) => boolean;
+  register: (email: string, password: string) => boolean;
   logout: () => void;
 }
 
 const DiaryContext = createContext<DiaryContextType | undefined>(undefined);
 
-// В реальном приложении используйте безопасный хеш!
-const CORRECT_PASSWORD = "12345"; // Это только для демо! В реальности используйте хеш + соль
+// For demonstration - in a real app this would be properly secured
+const CORRECT_EMAIL = "user@example.com";
+const CORRECT_PASSWORD = "12345";
 
 export const DiaryProvider = ({ children }: { children: ReactNode }) => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSiteBlocked, setIsSiteBlocked] = useState(false);
 
-  // Загружаем записи и проверяем блокировку при монтировании
   useEffect(() => {
     const savedEntries = localStorage.getItem("diaryEntries");
     if (savedEntries) {
       try {
         setEntries(JSON.parse(savedEntries));
       } catch (error) {
-        console.error("Ошибка при загрузке записей дневника", error);
+        console.error("Error loading diary entries", error);
       }
     }
     
-    // Проверяем статус аутентификации и блокировки
     const authStatus = localStorage.getItem("diaryAuth");
     if (authStatus === "true") {
       setIsAuthenticated(true);
@@ -51,7 +50,6 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Сохраняем записи при изменении
   useEffect(() => {
     localStorage.setItem("diaryEntries", JSON.stringify(entries));
   }, [entries]);
@@ -68,18 +66,21 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
     setEntries(entries.filter(entry => entry.id !== id));
   };
 
-  const login = (password: string) => {
-    // Если сайт уже заблокирован после первого использования
+  const register = (email: string, password: string) => {
     if (isSiteBlocked) {
       return false;
     }
 
-    const success = password === CORRECT_PASSWORD;
+    // Very simple validation for demo
+    const success = (email === CORRECT_EMAIL && password === CORRECT_PASSWORD) || 
+                   (!localStorage.getItem("registeredEmail") && email.includes("@") && password.length >= 5);
+    
     if (success) {
       setIsAuthenticated(true);
       localStorage.setItem("diaryAuth", "true");
+      localStorage.setItem("registeredEmail", email);
       
-      // Блокируем сайт после первого успешного входа
+      // Block the site after first successful login
       setIsSiteBlocked(true);
       localStorage.setItem("diarySiteBlocked", "true");
     }
@@ -89,7 +90,7 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem("diaryAuth");
-    // Не удаляем блокировку при выходе!
+    // Don't remove the block status when logging out!
   };
 
   return (
@@ -100,7 +101,7 @@ export const DiaryProvider = ({ children }: { children: ReactNode }) => {
         deleteEntry,
         isAuthenticated,
         isSiteBlocked,
-        login,
+        register,
         logout,
       }}
     >
