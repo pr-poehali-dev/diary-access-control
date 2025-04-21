@@ -1,13 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { useDiary } from "@/components/DiaryContext";
-import { PlusCircle, LogOut, Trash2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
@@ -50,82 +44,87 @@ const DiaryPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">Мой Дневник</h1>
-          <div className="flex items-center gap-2">
-            <Card className="p-2 bg-yellow-50 border-yellow-200">
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertCircle className="h-4 w-4" />
-                <p className="text-xs font-medium">Одноразовый доступ</p>
+    <div className="min-h-screen bg-white p-4">
+      <div className="max-w-4xl mx-auto border-2 border-gray-400 bg-gray-100 p-4">
+        <header className="mb-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Мой Дневник</h1>
+            <div className="flex gap-2">
+              <div className="border-2 border-red-500 bg-red-100 p-1 text-sm">
+                Одноразовый доступ
               </div>
-            </Card>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Выйти
-            </Button>
+              <button 
+                onClick={handleLogout}
+                className="border-2 border-gray-700 bg-gray-200 hover:bg-gray-300 px-2 py-1"
+              >
+                Выйти
+              </button>
+            </div>
           </div>
+          <hr className="border-gray-400 my-2" />
         </header>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl">Новая запись</CardTitle>
-            <CardDescription>Запишите свои мысли, чувства и события дня</CardDescription>
-          </CardHeader>
+        <div className="mb-6 border-2 border-gray-400 bg-white p-4">
+          <h2 className="text-xl font-bold mb-2">Новая запись</h2>
           <form onSubmit={handleAddEntry}>
-            <CardContent className="space-y-4">
-              <Input
-                placeholder="Заголовок записи"
+            <div className="mb-3">
+              <label className="block mb-1">Заголовок:</label>
+              <input
+                className="w-full border-2 border-gray-400 p-2"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-              <Textarea
-                placeholder="Что у вас на уме сегодня?"
+            </div>
+            <div className="mb-3">
+              <label className="block mb-1">Содержание:</label>
+              <textarea
+                className="w-full border-2 border-gray-400 p-2"
                 rows={5}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="ml-auto">
-                <PlusCircle className="h-4 w-4 mr-2" />
+            </div>
+            <div className="text-right">
+              <button 
+                type="submit" 
+                className="border-2 border-gray-700 bg-gray-200 hover:bg-gray-300 px-4 py-2"
+              >
                 Сохранить запись
-              </Button>
-            </CardFooter>
+              </button>
+            </div>
           </form>
-        </Card>
+        </div>
 
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold">Ваши записи</h2>
+        <div>
+          <h2 className="text-xl font-bold mb-2">Ваши записи</h2>
+          <hr className="border-gray-400 mb-4" />
           
           {entries.length === 0 ? (
-            <Card className="p-6 text-center text-muted-foreground">
+            <div className="text-center p-4 border-2 border-gray-400 bg-white">
               У вас пока нет записей. Создайте свою первую запись в дневнике!
-            </Card>
+            </div>
           ) : (
-            entries.map((entry) => (
-              <Card key={entry.id} className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <CardTitle>{entry.title}</CardTitle>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+            <div className="space-y-4">
+              {entries.map((entry) => (
+                <div key={entry.id} className="border-2 border-gray-400 bg-white">
+                  <div className="bg-gray-200 p-2 flex justify-between items-center">
+                    <div>
+                      <h3 className="font-bold">{entry.title}</h3>
+                      <p className="text-sm">{formatDate(entry.date)}</p>
+                    </div>
+                    <button 
                       onClick={() => deleteEntry(entry.id)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 -mt-1 -mr-2"
+                      className="border-2 border-red-500 bg-red-100 hover:bg-red-200 px-2 py-1 text-sm"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      Удалить
+                    </button>
                   </div>
-                  <CardDescription>{formatDate(entry.date)}</CardDescription>
-                </CardHeader>
-                <Separator />
-                <CardContent className="pt-4 whitespace-pre-wrap">
-                  {entry.content}
-                </CardContent>
-              </Card>
-            ))
+                  <div className="p-3 whitespace-pre-wrap">
+                    {entry.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
